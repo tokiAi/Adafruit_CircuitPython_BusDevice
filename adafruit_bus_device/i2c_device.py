@@ -167,21 +167,20 @@ class I2CDevice:
         """
         Try to read a byte from an address,
         if you get an OSError it means the device is not there
-        or that the device does not support these means of probing
+        
+        !!!! Jetson does not support these means of probing 
+        and this part was changed !!!!
         """
         while not self.i2c.try_lock():
-            time.sleep(0)
+            pass
         try:
-            self.i2c.writeto(self.device_address, b"")
+            result = bytearray(1)
+            self.i2c.readfrom_into(self.device_address, result)
         except OSError:
-            # some OS's dont like writing an empty bytesting...
-            # Retry by reading a byte
-            try:
-                result = bytearray(1)
-                self.i2c.readfrom_into(self.device_address, result)
-            except OSError:
-                # pylint: disable=raise-missing-from
-                raise ValueError("No I2C device at address: 0x%x" % self.device_address)
-                # pylint: enable=raise-missing-from
+            # Jetson dont like writing an empty bytesting...
+            
+            # pylint: disable=raise-missing-from
+            raise ValueError("No I2C device at address: 0x%x" % self.device_address)
+            # pylint: enable=raise-missing-from
         finally:
             self.i2c.unlock()
